@@ -20,16 +20,19 @@
        → Framework Preset: "Other" → 빌드 설정 그대로 → Deploy
     5. 이후엔 GitHub에 커밋/이슈만 쓰면 자동 반영 (Vercel 접속 불필요)
 
-  ▸ 글 쓰는 방법 두 가지:
+  ▸ 글 쓰는 방법 세 가지:
     [방법 A — 파일] posts.js 편집 후 커밋 (Vercel이 수십 초 내 자동 재배포)
-    [방법 B — 실시간, 추천] GitHub Issues로 글쓰기:
-      1. 아래 CONFIG의 user/repo를 본인 것으로 수정 (최초 1회)
-      2. 저장소에 "log" 라벨 생성 (Issues → Labels → New label, 최초 1회)
-      3. 새 이슈 작성: 제목=글 제목, 본문=글 내용, 라벨 "log" 붙이기
-      4. 사이트 새로고침 → 즉시 표시. 폰 GitHub 앱에서도 가능.
-      ※ 라벨은 저장소 관리자만 붙일 수 있어서, 모르는 사람이
+    [방법 B — GitHub Issues] 새 이슈 작성 + "log" 라벨 → 새로고침 시 반영
+    [방법 C — 사이트 안에서, 추천] "글쓰기" 탭에서 직접 작성:
+      최초 1회 Fine-grained 토큰 발급이 필요 (탭 안에 발급 절차 안내 있음).
+      토큰 권한은 이 저장소의 Issues 읽기/쓰기만 — 그 외 전부 No access.
+      토큰은 사용하는 기기의 브라우저에만 저장된다.
+      게시하면 자동으로 "log" 라벨이 붙은 이슈로 저장되고 즉시 목록에 표시.
+    ▸ 공통 참고:
+      1. 최초 1회: 아래 CONFIG의 user/repo를 본인 것으로 수정
+      2. 라벨은 저장소 관리자만 붙일 수 있어서, 모르는 사람이
         이슈를 열어도 "log" 라벨이 없으면 사이트에 안 뜬다 (스팸 방지).
-      ※ "log" 외의 라벨들은 글의 태그로 자동 표시된다.
+      3. "log" 외의 라벨들은 글의 태그로 자동 표시된다.
   ▸ 원칙: 실명·학교·개인 연락처는 절대 넣지 않는다.
 -->
 <meta charset="UTF-8">
@@ -201,7 +204,43 @@
   .ms-bar i{display:block;height:100%;background:var(--green);border-radius:99px}
   .ms-note{color:var(--muted);font-family:var(--mono);font-size:12px;margin-top:14px}
 
-  /* ── 원칙 ──────────────────────────────── */
+  /* ── 글쓰기 폼 ──────────────────────────── */
+  .write-box{max-width:680px}
+  .field{
+    width:100%;background:var(--bg);border:1px solid var(--border);border-radius:6px;
+    color:var(--fg);font-family:var(--sans);font-size:14px;padding:8px 12px;
+    margin-bottom:12px;
+  }
+  textarea.field{resize:vertical;line-height:1.6;font-family:var(--sans)}
+  .field::placeholder{color:var(--muted)}
+  .btn-green{
+    appearance:none;cursor:pointer;border:1px solid rgba(240,246,252,.1);
+    background:#238636;color:#fff;font-family:var(--sans);font-size:13.5px;font-weight:600;
+    border-radius:6px;padding:7px 16px;
+  }
+  .btn-green:hover{background:#2ea043}
+  .btn-green:disabled{opacity:.5;cursor:default}
+  .btn-plain{
+    appearance:none;cursor:pointer;background:var(--btn);border:1px solid var(--border);
+    color:var(--fg);font-family:var(--sans);font-size:13px;border-radius:6px;padding:6px 14px;
+  }
+  .btn-plain:hover{border-color:var(--muted)}
+  .btn-danger-text{background:none;border:none;color:#f85149;font-size:12.5px;cursor:pointer;font-family:var(--sans)}
+  .btn-danger-text:hover{text-decoration:underline}
+  .write-actions{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+  .w-status{font-size:13px}
+  .w-status.ok{color:var(--green)}
+  .w-status.err{color:#f85149}
+  .setup-note{
+    background:var(--panel);border:1px solid var(--border);border-radius:6px;
+    padding:14px 16px;font-size:13px;color:var(--muted);margin-bottom:16px;
+  }
+  .setup-note strong{color:var(--fg)}
+  .setup-note ol{margin:8px 0 0 20px}
+  .setup-note li{margin-bottom:5px}
+  .setup-warn{color:var(--orange);font-size:12.5px;margin-top:10px}
+
+
   .principles{list-style:none}
   .principles li{
     border:1px solid var(--border);border-radius:6px;background:var(--panel);
@@ -240,6 +279,10 @@
     <button class="tab" role="tab" aria-selected="false" data-panel="log">
       <svg viewBox="0 0 16 16"><path d="M5 3.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm0 2.122a2.25 2.25 0 1 0-1.5 0v5.256a2.251 2.251 0 1 0 1.5 0V5.372Zm6.75 5.256a2.25 2.25 0 1 0 1.5 0V6.5a2.5 2.5 0 0 0-2.5-2.5h-1.94l1.72-1.72a.75.75 0 0 0-1.06-1.06l-3 3a.75.75 0 0 0 0 1.06l3 3a.75.75 0 1 0 1.06-1.06L8.81 5.5h1.94a1 1 0 0 1 1 1Z"/></svg>
       개발 로그 <span class="count" id="post-count">0</span>
+    </button>
+    <button class="tab" role="tab" aria-selected="false" data-panel="write">
+      <svg viewBox="0 0 16 16"><path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Zm.176 4.823L9.75 4.81l-6.286 6.287a.253.253 0 0 0-.064.108l-.558 1.953 1.953-.558a.253.253 0 0 0 .108-.064Zm1.238-3.763a.25.25 0 0 0-.354 0L10.811 3.75l1.439 1.44 1.263-1.263a.25.25 0 0 0 0-.354Z"/></svg>
+      글쓰기
     </button>
     <button class="tab" role="tab" aria-selected="false" data-panel="roadmap">
       <svg viewBox="0 0 16 16"><path d="M7.75 0a.75.75 0 0 1 .75.75V3h3.634c.414 0 .814.147 1.13.414l2.07 1.75a1.75 1.75 0 0 1 0 2.672l-2.07 1.75a1.75 1.75 0 0 1-1.13.414H8.5v5.25a.75.75 0 0 1-1.5 0V10H3.25A1.75 1.75 0 0 1 1.5 8.25v-3.5C1.5 3.784 2.284 3 3.25 3H7V.75A.75.75 0 0 1 7.75 0Z"/></svg>
@@ -346,7 +389,53 @@
       <div id="log-list"></div>
     </div>
 
-    <!-- ══ 탭 3: 로드맵 (마일스톤 스타일) ══ -->
+    <!-- ══ 탭 3: 글쓰기 (사이트 안 실시간 작성) ══ -->
+    <div class="panel" id="panel-write">
+      <div class="box write-box">
+        <div class="box-head">
+          <svg width="15" height="15" viewBox="0 0 16 16" fill="#8b949e"><path d="M11.013 1.427a1.75 1.75 0 0 1 2.474 0l1.086 1.086a1.75 1.75 0 0 1 0 2.474l-8.61 8.61c-.21.21-.47.364-.756.445l-3.251.93a.75.75 0 0 1-.927-.928l.929-3.25c.081-.286.235-.547.445-.758l8.61-8.61Z"/></svg>
+          <span class="fname">새 로그 작성</span>
+        </div>
+        <div class="box-body">
+
+          <!-- 토큰 미설정 상태: 안내 + 저장 -->
+          <div id="write-setup">
+            <div class="setup-note">
+              <strong>사이트에서 바로 글을 쓰려면 GitHub 토큰(열쇠)이 한 번 필요합니다.</strong>
+              <ol>
+                <li>GitHub → Settings → Developer settings → <strong>Fine-grained tokens</strong> → Generate new token</li>
+                <li>Repository access: <strong>Only select repositories</strong> → 이 저장소만 선택</li>
+                <li>Permissions → <strong>Issues: Read and write</strong> (다른 권한은 전부 No access)</li>
+                <li>Expiration: 90일 권장 (만료되면 새로 만들어 다시 저장)</li>
+              </ol>
+              <p class="setup-warn">⚠ 토큰은 비밀번호와 같습니다. 절대 글이나 저장소에 붙여넣지 말 것.
+              이 사이트는 토큰을 <strong>지금 쓰는 기기의 브라우저에만</strong> 저장하며 어디로도 전송하지 않습니다
+              (게시할 때 GitHub API 호출에만 사용). 공용 컴퓨터에서는 저장하지 마세요.</p>
+            </div>
+            <input class="field" type="password" id="token-input" placeholder="github_pat_… 토큰 붙여넣기" autocomplete="off">
+            <div class="write-actions">
+              <button class="btn-green" id="token-save">토큰 저장하고 글쓰기 시작</button>
+              <a class="btn-plain" id="gh-new-issue" target="_blank" rel="noopener">토큰 없이 GitHub에서 쓰기 ↗</a>
+            </div>
+          </div>
+
+          <!-- 토큰 설정됨: 작성 폼 -->
+          <div id="write-form" hidden>
+            <input class="field" id="w-title" placeholder="제목" maxlength="120">
+            <textarea class="field" id="w-body" rows="9" placeholder="본문 — 문단은 빈 줄로 구분"></textarea>
+            <input class="field" id="w-tags" placeholder="태그 (쉼표로 구분, 예: python, bootcamp)">
+            <div class="write-actions">
+              <button class="btn-green" id="w-submit">게시</button>
+              <span class="w-status" id="w-status" role="status"></span>
+              <button class="btn-danger-text" id="token-clear" style="margin-left:auto">토큰 삭제</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ 탭 4: 로드맵 (마일스톤 스타일) ══ -->
     <div class="panel" id="panel-roadmap">
       <div class="milestones">
         <div class="milestone">
@@ -534,6 +623,98 @@ tagEl.addEventListener('change', render);
 refreshTags();
 render();      // 1단계: posts.js 글 즉시 표시
 loadIssues();  // 2단계: Issues 글을 실시간으로 얹기
+
+/* ── 사이트 안 글쓰기 (GitHub Issues API + Fine-grained 토큰) ──
+   토큰은 이 브라우저의 localStorage에만 저장되고, 게시 시 GitHub API
+   호출의 Authorization 헤더로만 쓰인다. 저장소·서버로 전송되지 않음. */
+const TOKEN_KEY = 'refracta_token';
+const setupEl = document.getElementById('write-setup');
+const formEl  = document.getElementById('write-form');
+const statusEl = document.getElementById('w-status');
+const API = `https://api.github.com/repos/${CONFIG.user}/${CONFIG.repo}`;
+
+document.getElementById('gh-new-issue').href =
+  `https://github.com/${CONFIG.user}/${CONFIG.repo}/issues/new?labels=${encodeURIComponent(CONFIG.label)}`;
+
+function getToken(){ try{ return localStorage.getItem(TOKEN_KEY) || ''; }catch(e){ return ''; } }
+function refreshWriteUI(){
+  const has = !!getToken();
+  setupEl.hidden = has;
+  formEl.hidden = !has;
+}
+function setStatus(msg, cls){
+  statusEl.textContent = msg;
+  statusEl.className = 'w-status' + (cls ? ' ' + cls : '');
+}
+
+document.getElementById('token-save').addEventListener('click', () => {
+  const t = document.getElementById('token-input').value.trim();
+  if(!t){ return; }
+  try{ localStorage.setItem(TOKEN_KEY, t); }catch(e){ alert('이 브라우저에서는 저장이 불가능합니다.'); return; }
+  document.getElementById('token-input').value = '';
+  refreshWriteUI();
+});
+document.getElementById('token-clear').addEventListener('click', () => {
+  try{ localStorage.removeItem(TOKEN_KEY); }catch(e){}
+  setStatus('', '');
+  refreshWriteUI();
+});
+
+function ghHeaders(){
+  return {
+    'Accept': 'application/vnd.github+json',
+    'Authorization': 'Bearer ' + getToken(),
+    'Content-Type': 'application/json'
+  };
+}
+
+/* 라벨이 없으면 만들어서, 게시한 글이 라벨 누락으로 안 보이는 일을 방지 */
+async function ensureLabel(name, color){
+  const r = await fetch(`${API}/labels/${encodeURIComponent(name)}`, {headers: ghHeaders()});
+  if(r.status === 404){
+    await fetch(`${API}/labels`, {
+      method: 'POST', headers: ghHeaders(),
+      body: JSON.stringify({name, color: color || '30363d'})
+    });
+  }
+}
+
+document.getElementById('w-submit').addEventListener('click', async () => {
+  const title = document.getElementById('w-title').value.trim();
+  const body  = document.getElementById('w-body').value.trim();
+  const tags  = document.getElementById('w-tags').value
+    .split(',').map(s => s.trim()).filter(Boolean);
+  if(!title){ setStatus('제목을 입력하세요.', 'err'); return; }
+
+  const btn = document.getElementById('w-submit');
+  btn.disabled = true;
+  setStatus('게시 중…', '');
+  try{
+    await ensureLabel(CONFIG.label, 'd29922');
+    for(const t of tags){ await ensureLabel(t); }
+
+    const res = await fetch(`${API}/issues`, {
+      method: 'POST', headers: ghHeaders(),
+      body: JSON.stringify({ title, body, labels: [CONFIG.label, ...tags] })
+    });
+    if(res.status === 401){ setStatus('토큰이 유효하지 않습니다. 토큰 삭제 후 새로 저장하세요.', 'err'); return; }
+    if(res.status === 404){ setStatus('저장소를 찾을 수 없습니다. CONFIG의 user/repo와 토큰의 저장소 권한을 확인하세요.', 'err'); return; }
+    if(!res.ok){ setStatus('게시 실패 (' + res.status + '). 잠시 후 다시 시도하세요.', 'err'); return; }
+
+    document.getElementById('w-title').value = '';
+    document.getElementById('w-body').value = '';
+    document.getElementById('w-tags').value = '';
+    setStatus('게시 완료 ✓', 'ok');
+    await loadIssues(); // 목록 즉시 갱신
+    document.querySelector('.tab[data-panel="log"]').click(); // 로그 탭으로 이동
+  }catch(e){
+    setStatus('네트워크 오류. 연결을 확인하세요.', 'err');
+  }finally{
+    btn.disabled = false;
+  }
+});
+
+refreshWriteUI();
 </script>
 
 </body>
