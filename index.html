@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<!--
+  ═══════════════════════════════════════════════════════════
+  리프랙타 개발 로그 v0.2 — GitHub 스타일 / 저장소 = 데이터베이스
+  ═══════════════════════════════════════════════════════════
+
+  파일 구성 (둘 다 저장소 루트에):
+    index.html  ← 이 파일 (화면)
+    posts.js    ← 데이터베이스 (글은 전부 여기에)
+
+  ▸ 배포 (GitHub Pages):
+    1. 저장소 생성 (예: refracta-log)
+    2. index.html + posts.js 업로드
+    3. Settings → Pages → Branch: main / (root) → Save
+
+  ▸ 글 쓰기: posts.js만 편집. 이 파일은 건드릴 일 없음.
+  ▸ 원칙: 실명·학교·개인 연락처는 절대 넣지 않는다.
+-->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>refracta-log · 대기 아래와 위를 함께 잽니다</title>
+<meta name="description" content="GNSS 전파의 굴절에서 날씨를, 우주방사선에서 우주기상을 읽는 데이터 회사를 향한 개발 기록.">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
+<style>
+  /* ── GitHub 다크 테마 토큰 ─────────────────── */
+  :root{
+    --bg:#0d1117;          /* canvas-default */
+    --bg-inset:#010409;    /* canvas-inset (헤더) */
+    --panel:#161b22;       /* canvas-subtle */
+    --border:#30363d;
+    --border-muted:#21262d;
+    --fg:#e6edf3;
+    --muted:#8b949e;
+    --link:#58a6ff;
+    --green:#3fb950;
+    --orange:#d29922;
+    --btn:#21262d;
+    --btn-border:#8b949e33;
+    --mono:ui-monospace,SFMono-Regular,"SF Mono",Menlo,Consolas,monospace;
+    --sans:'Pretendard Variable',-apple-system,"Segoe UI",Pretendard,sans-serif;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--bg);color:var(--fg);font-family:var(--sans);font-size:14px;line-height:1.6}
+  a{color:var(--link);text-decoration:none}
+  a:hover{text-decoration:underline}
+  a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--link);outline-offset:2px;border-radius:4px}
+  .wrap{max-width:1012px;margin:0 auto;padding:0 16px}
+
+  /* ── 상단 헤더 (GitHub 헤더) ────────────────── */
+  .gh-header{background:var(--bg-inset);border-bottom:1px solid var(--border);padding:14px 0}
+  .gh-header .wrap{display:flex;align-items:center;gap:10px}
+  .logo{width:26px;height:26px;flex:none}
+  .repo-path{font-size:15px;color:var(--fg)}
+  .repo-path a{color:var(--link);font-weight:400}
+  .repo-path .sep{color:var(--muted);margin:0 2px}
+  .repo-path strong{font-weight:600}
+  .badge-public{
+    font-size:11px;color:var(--muted);border:1px solid var(--border);
+    border-radius:999px;padding:1px 8px;margin-left:6px;vertical-align:2px;
+  }
+
+  /* ── 탭 내비 ────────────────────────────── */
+  .tabs{background:var(--bg-inset);border-bottom:1px solid var(--border)}
+  .tabs .wrap{display:flex;gap:6px;overflow-x:auto}
+  .tab{
+    appearance:none;background:none;border:none;cursor:pointer;
+    color:var(--fg);font-family:var(--sans);font-size:13.5px;
+    padding:10px 12px 12px;border-bottom:2px solid transparent;
+    display:flex;align-items:center;gap:7px;white-space:nowrap;
+  }
+  .tab:hover{border-bottom-color:var(--border)}
+  .tab[aria-selected="true"]{border-bottom-color:#f78166;font-weight:600}
+  .tab svg{width:15px;height:15px;fill:var(--muted)}
+  .tab .count{
+    background:var(--btn);border:1px solid var(--border-muted);
+    border-radius:999px;font-size:11px;padding:0 7px;color:var(--fg);
+  }
+
+  /* ── 본문 레이아웃 ──────────────────────── */
+  main{padding:24px 0 64px}
+  .panel{display:none}
+  .panel.active{display:block}
+  .layout{display:grid;grid-template-columns:1fr 280px;gap:24px}
+  @media (max-width:840px){.layout{grid-template-columns:1fr}}
+
+  /* ── README 박스 ────────────────────────── */
+  .box{border:1px solid var(--border);border-radius:6px;overflow:hidden}
+  .box-head{
+    background:var(--panel);border-bottom:1px solid var(--border);
+    padding:9px 16px;font-size:13px;display:flex;align-items:center;gap:8px;
+  }
+  .box-head .fname{font-family:var(--mono);font-size:12.5px}
+  .box-body{padding:28px 32px}
+  @media (max-width:600px){.box-body{padding:20px 16px}}
+  .md h1{font-size:26px;padding-bottom:10px;border-bottom:1px solid var(--border-muted);margin-bottom:16px;font-weight:700}
+  .md h2{font-size:19px;padding-bottom:8px;border-bottom:1px solid var(--border-muted);margin:28px 0 12px;font-weight:600}
+  .md p{margin-bottom:14px;font-size:14.5px}
+  .md p.dim{color:var(--muted)}
+  .md ul{margin:0 0 14px 22px}
+  .md li{margin-bottom:6px;font-size:14.5px}
+  .md code{
+    font-family:var(--mono);font-size:12.5px;background:#6e768166;
+    border-radius:5px;padding:2px 5px;
+  }
+  .md blockquote{
+    border-left:3px solid var(--border);color:var(--muted);
+    padding:2px 0 2px 14px;margin-bottom:14px;
+  }
+  .refraction{display:block;width:100%;height:auto;margin:18px 0 6px;border:1px solid var(--border-muted);border-radius:6px;background:var(--bg-inset)}
+  .ray-bent{stroke-dasharray:6 7;animation:flow 2.6s linear infinite}
+  @keyframes flow{to{stroke-dashoffset:-26}}
+  @media (prefers-reduced-motion:reduce){.ray-bent{animation:none}}
+  .svg-label{font-family:var(--mono);font-size:10.5px;fill:var(--muted);letter-spacing:.04em}
+
+  /* ── 사이드바 (About) ───────────────────── */
+  aside h3{font-size:15px;font-weight:600;margin-bottom:12px}
+  aside .desc{font-size:13.5px;margin-bottom:14px}
+  aside .meta{list-style:none;color:var(--muted);font-size:13px}
+  aside .meta li{display:flex;gap:8px;align-items:center;margin-bottom:9px}
+  aside .meta svg{width:15px;height:15px;fill:var(--muted);flex:none}
+  .topics{display:flex;flex-wrap:wrap;gap:6px;margin-top:14px}
+  .topic{
+    font-size:11.5px;color:var(--link);background:#388bfd26;
+    border-radius:999px;padding:2px 10px;
+  }
+  aside hr{border:none;border-top:1px solid var(--border-muted);margin:18px 0}
+
+  /* ── 로그 (커밋 리스트 스타일) ─────────────── */
+  .log-toolbar{
+    display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;
+  }
+  .log-toolbar input,.log-toolbar select{
+    background:var(--bg);border:1px solid var(--border);border-radius:6px;
+    color:var(--fg);font-family:var(--sans);font-size:13.5px;padding:6px 12px;
+  }
+  .log-toolbar input{flex:1;min-width:180px}
+  .log-toolbar input::placeholder{color:var(--muted)}
+  .date-group{margin-bottom:4px}
+  .date-head{
+    display:flex;align-items:center;gap:10px;color:var(--muted);
+    font-size:12.5px;padding:10px 0 8px;
+  }
+  .date-head svg{width:15px;height:15px;fill:var(--muted)}
+  .commit-list{border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-left:25px}
+  @media (max-width:600px){.commit-list{margin-left:0}}
+  .commit{
+    padding:12px 16px;border-bottom:1px solid var(--border-muted);
+    background:var(--bg);
+  }
+  .commit:last-child{border-bottom:none}
+  .commit-title{font-size:14.5px;font-weight:600;color:var(--fg);cursor:pointer;background:none;border:none;font-family:var(--sans);text-align:left;padding:0}
+  .commit-title:hover{color:var(--link);text-decoration:underline}
+  .commit-meta{display:flex;align-items:center;gap:8px;margin-top:5px;color:var(--muted);font-size:12.5px;flex-wrap:wrap}
+  .commit-id{font-family:var(--mono);font-size:11.5px;color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:1px 7px}
+  .label{
+    font-size:11px;border-radius:999px;padding:1px 9px;cursor:pointer;border:none;font-family:var(--sans);
+    color:var(--link);background:#388bfd26;
+  }
+  .label:hover{background:#388bfd40}
+  .commit-body{
+    display:none;margin-top:12px;padding:12px 14px;border-left:3px solid var(--border);
+    color:var(--fg);font-size:13.5px;white-space:pre-line;background:var(--panel);border-radius:0 6px 6px 0;
+  }
+  .commit.open .commit-body{display:block}
+  .empty{
+    border:1px dashed var(--border);border-radius:6px;color:var(--muted);
+    text-align:center;padding:40px 16px;font-size:13.5px;
+  }
+
+  /* ── 로드맵 (마일스톤 스타일) ─────────────── */
+  .milestones{border:1px solid var(--border);border-radius:6px;overflow:hidden}
+  .milestone{padding:16px;border-bottom:1px solid var(--border-muted)}
+  .milestone:last-child{border-bottom:none}
+  .milestone .ms-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .milestone h3{font-size:15px;font-weight:600}
+  .ms-phase{font-family:var(--mono);font-size:11px;color:var(--muted);border:1px solid var(--border);border-radius:6px;padding:1px 7px}
+  .ms-state{
+    font-size:11px;border-radius:999px;padding:1px 9px;font-weight:600;
+  }
+  .ms-state.open{color:#0d1117;background:var(--green)}
+  .ms-state.planned{color:var(--muted);border:1px solid var(--border)}
+  .milestone p{color:var(--muted);font-size:13px;margin-top:6px}
+  .ms-bar{height:6px;background:var(--btn);border-radius:99px;margin-top:12px;overflow:hidden}
+  .ms-bar i{display:block;height:100%;background:var(--green);border-radius:99px}
+  .ms-note{color:var(--muted);font-family:var(--mono);font-size:12px;margin-top:14px}
+
+  /* ── 원칙 ──────────────────────────────── */
+  .principles{list-style:none}
+  .principles li{
+    border:1px solid var(--border);border-radius:6px;background:var(--panel);
+    padding:14px 16px;margin-bottom:10px;display:flex;gap:14px;align-items:flex-start;
+  }
+  .principles .num{font-family:var(--mono);font-size:12px;color:var(--green);padding-top:2px;flex:none}
+  .principles strong{display:block;font-size:14.5px;margin-bottom:3px}
+  .principles span{color:var(--muted);font-size:13px}
+
+  footer{border-top:1px solid var(--border);padding:28px 0;color:var(--muted);font-size:12.5px}
+  footer .wrap{display:flex;flex-direction:column;gap:6px}
+  footer .sig{font-family:var(--mono)}
+</style>
+</head>
+<body>
+
+<!-- ── 헤더: 저장소 경로 ── -->
+<div class="gh-header">
+  <div class="wrap">
+    <svg class="logo" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="12" cy="12" r="10.5" fill="none" stroke="#8b949e" stroke-width="1.5"/>
+      <path d="M4 15 Q 12 9 20 15" fill="none" stroke="#d29922" stroke-width="1.5"/>
+      <rect x="9.6" y="4.6" width="4.8" height="4.8" fill="none" stroke="#58a6ff" stroke-width="1.5" transform="rotate(45 12 7)"/>
+    </svg>
+    <span class="repo-path"><a href="#">jiwon</a><span class="sep">/</span><strong>refracta-log</strong><span class="badge-public">Public</span></span>
+  </div>
+</div>
+
+<!-- ── 탭 ── -->
+<div class="tabs" role="tablist">
+  <div class="wrap">
+    <button class="tab" role="tab" aria-selected="true" data-panel="overview">
+      <svg viewBox="0 0 16 16"><path d="M0 1.75A.75.75 0 0 1 .75 1h4.253c1.227 0 2.317.59 3 1.501A3.743 3.743 0 0 1 11 1h4.25a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-.75.75h-4.5a2.25 2.25 0 0 0-2.25 2.25.75.75 0 0 1-1.5 0A2.25 2.25 0 0 0 4.75 13H.75a.75.75 0 0 1-.75-.75Z"/></svg>
+      개요
+    </button>
+    <button class="tab" role="tab" aria-selected="false" data-panel="log">
+      <svg viewBox="0 0 16 16"><path d="M5 3.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm0 2.122a2.25 2.25 0 1 0-1.5 0v5.256a2.251 2.251 0 1 0 1.5 0V5.372Zm6.75 5.256a2.25 2.25 0 1 0 1.5 0V6.5a2.5 2.5 0 0 0-2.5-2.5h-1.94l1.72-1.72a.75.75 0 0 0-1.06-1.06l-3 3a.75.75 0 0 0 0 1.06l3 3a.75.75 0 1 0 1.06-1.06L8.81 5.5h1.94a1 1 0 0 1 1 1Z"/></svg>
+      개발 로그 <span class="count" id="post-count">0</span>
+    </button>
+    <button class="tab" role="tab" aria-selected="false" data-panel="roadmap">
+      <svg viewBox="0 0 16 16"><path d="M7.75 0a.75.75 0 0 1 .75.75V3h3.634c.414 0 .814.147 1.13.414l2.07 1.75a1.75 1.75 0 0 1 0 2.672l-2.07 1.75a1.75 1.75 0 0 1-1.13.414H8.5v5.25a.75.75 0 0 1-1.5 0V10H3.25A1.75 1.75 0 0 1 1.5 8.25v-3.5C1.5 3.784 2.284 3 3.25 3H7V.75A.75.75 0 0 1 7.75 0Z"/></svg>
+      로드맵
+    </button>
+    <button class="tab" role="tab" aria-selected="false" data-panel="about">
+      <svg viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM6.92 6.085h.001a.749.749 0 1 1-1.342-.67c.169-.339.436-.701.849-.977C6.845 4.16 7.369 4 8 4a2.756 2.756 0 0 1 1.637.525c.503.377.863.965.863 1.725 0 .448-.115.83-.329 1.15-.205.307-.47.513-.692.662-.109.072-.22.138-.313.195l-.006.004a6.24 6.24 0 0 0-.26.16.952.952 0 0 0-.276.245.75.75 0 0 1-1.248-.832c.184-.264.42-.489.692-.661.103-.067.207-.132.313-.195l.007-.004c.1-.061.182-.11.258-.161a.969.969 0 0 0 .277-.245C8.96 6.514 9 6.427 9 6.25a.612.612 0 0 0-.262-.525A1.27 1.27 0 0 0 8 5.5c-.369 0-.595.09-.74.187a1.01 1.01 0 0 0-.34.398ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg>
+      원칙
+    </button>
+  </div>
+</div>
+
+<main>
+  <div class="wrap">
+
+    <!-- ══ 탭 1: 개요 (README + About 사이드바) ══ -->
+    <div class="panel active" id="panel-overview">
+      <div class="layout">
+        <div class="box">
+          <div class="box-head">
+            <svg width="15" height="15" viewBox="0 0 16 16" fill="#8b949e"><path d="M0 1.75A.75.75 0 0 1 .75 1h4.253c1.227 0 2.317.59 3 1.501A3.743 3.743 0 0 1 11 1h4.25a.75.75 0 0 1 .75.75v10.5a.75.75 0 0 1-.75.75h-4.5a2.25 2.25 0 0 0-2.25 2.25.75.75 0 0 1-1.5 0A2.25 2.25 0 0 0 4.75 13H.75a.75.75 0 0 1-.75-.75Z"/></svg>
+            <span class="fname">README.md</span>
+          </div>
+          <div class="box-body md">
+            <h1>리프랙타 — 대기 아래와 위를 함께 잽니다</h1>
+            <p class="dim">Sounding the atmosphere, below and above.</p>
+            <p>GNSS 전파의 굴절에서 날씨를, 우주방사선에서 우주기상을 읽는 데이터 회사를 향해 갑니다. 이 저장소는 그 회사가 되기까지의 모든 실험과 실패와 코드를 기록합니다.</p>
+
+            <svg class="refraction" viewBox="0 0 880 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="지평선 너머로 지는 항법위성의 전파가 대기를 통과하며 굴절되는 다이어그램">
+              <defs>
+                <linearGradient id="atmo" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0" stop-color="#58a6ff" stop-opacity="0"/>
+                  <stop offset=".7" stop-color="#58a6ff" stop-opacity=".10"/>
+                  <stop offset="1" stop-color="#d29922" stop-opacity=".16"/>
+                </linearGradient>
+              </defs>
+              <path d="M -40 340 Q 440 195 960 340" fill="#161b22" stroke="#30363d"/>
+              <path d="M -40 340 Q 440 195 960 340 L 960 250 Q 440 110 -40 250 Z" fill="url(#atmo)"/>
+              <path d="M -40 285 Q 440 145 960 285" fill="none" stroke="#30363d" stroke-width="1" stroke-dasharray="2 6"/>
+              <path d="M -40 250 Q 440 110 960 250" fill="none" stroke="#30363d" stroke-width="1" stroke-dasharray="2 6"/>
+              <line x1="120" y1="96" x2="800" y2="150" stroke="#8b949e" stroke-width="1" stroke-dasharray="3 6" opacity=".45"/>
+              <path class="ray-bent" d="M 120 96 C 380 122, 470 196, 560 208 C 650 220, 730 172, 800 150" fill="none" stroke="#d29922" stroke-width="2"/>
+              <g transform="translate(120 96)">
+                <rect x="-7" y="-7" width="14" height="14" fill="#0d1117" stroke="#58a6ff" stroke-width="1.5" transform="rotate(45)"/>
+                <text class="svg-label" x="-8" y="-18">LEO 수신기 (리프랙타)</text>
+              </g>
+              <g transform="translate(800 150)">
+                <circle r="6" fill="#0d1117" stroke="#58a6ff" stroke-width="1.5"/>
+                <text class="svg-label" x="-6" y="-12" text-anchor="end">GNSS 위성</text>
+              </g>
+              <text class="svg-label" x="470" y="235" text-anchor="middle" fill="#d29922">굴절각 → 온도·기압·습도 프로파일</text>
+              <text class="svg-label" x="452" y="90" text-anchor="middle" opacity=".6">직진 가정 경로</text>
+            </svg>
+
+            <h2>우리가 푸는 문제</h2>
+            <p>기상 예보의 정확도는 관측 데이터가 결정하는데, 대기의 연직 프로파일(온도·기압·습도)은 여전히 부족합니다. 동시에 위성·항공·전력망은 우주방사선 위협에 노출되어 있는데, 이를 상시 감시하는 데이터는 더 부족합니다.</p>
+            <blockquote>이 둘을 한 위성에서 동시에 재는 회사는 아직 없습니다 — 그것이 리프랙타의 자리입니다.</blockquote>
+
+            <h2>무엇을 만드는가</h2>
+            <ul>
+              <li><code>01 부품</code> — 큐브샛용 방사선 검출기, 그다음 GNSS-RO 수신기. 첫 제품이자 우주 헤리티지의 시작.</li>
+              <li><code>02 데이터</code> — RO 대기 프로파일 + 우주방사선 데이터 군집 서비스. 기상기관·항공·에너지·보험이 고객.</li>
+              <li><code>03 발사 (언젠가)</code> — 메탄 엔진 기반 자체 발사 능력. 조건이 갖춰졌을 때만 여는 문.</li>
+            </ul>
+
+            <h2>이 저장소의 구조</h2>
+            <ul>
+              <li><code>index.html</code> — 사이트 본체 (건드릴 일 없음)</li>
+              <li><code>posts.js</code> — 개발 로그 데이터베이스. 글은 전부 이 파일에 쌓이고, git 커밋 히스토리가 곧 변경 이력이다.</li>
+            </ul>
+          </div>
+        </div>
+
+        <aside>
+          <h3>About</h3>
+          <p class="desc">대기 아래(날씨)와 위(우주기상)를 함께 재는 데이터 회사를 향한 개발 아카이브. Phase 0 — 창업 준비 중인 학생 프로젝트.</p>
+          <ul class="meta">
+            <li><svg viewBox="0 0 16 16"><path d="m7.775 3.275 1.25-1.25a3.5 3.5 0 1 1 4.95 4.95l-2.5 2.5a3.5 3.5 0 0 1-4.95 0 .751.751 0 0 1 1.06-1.06 2 2 0 0 0 2.83 0l2.5-2.5a2 2 0 0 0-2.83-2.83l-1.25 1.25a.751.751 0 0 1-1.06-1.06Zm-4.69 9.64a2 2 0 0 0 2.83 0l1.25-1.25a.751.751 0 0 1 1.06 1.06l-1.25 1.25a3.5 3.5 0 1 1-4.95-4.95l2.5-2.5a3.5 3.5 0 0 1 4.95 0 .751.751 0 0 1-1.06 1.06 2 2 0 0 0-2.83 0l-2.5 2.5a2 2 0 0 0 0 2.83Z"/></svg>사이트: (GitHub Pages 주소)</li>
+            <li><svg viewBox="0 0 16 16"><path d="M1.75 2h12.5c.966 0 1.75.784 1.75 1.75v8.5A1.75 1.75 0 0 1 14.25 14H1.75A1.75 1.75 0 0 1 0 12.25v-8.5C0 2.784.784 2 1.75 2ZM1.5 12.251c0 .138.112.25.25.25h12.5a.25.25 0 0 0 .25-.25V5.809L8.38 9.397a.75.75 0 0 1-.76 0L1.5 5.809Z"/></svg>문의: (전용 이메일 개설 후)</li>
+            <li><svg viewBox="0 0 16 16"><path d="M8 0a8 8 0 1 1 0 16A8 8 0 0 1 8 0ZM1.5 8a6.5 6.5 0 1 0 13 0 6.5 6.5 0 0 0-13 0Zm7-3.25v2.992l2.028.812a.75.75 0 0 1-.557 1.392l-2.5-1A.751.751 0 0 1 7 8.25v-3.5a.75.75 0 0 1 1.5 0Z"/></svg>2026년 7월 시작</li>
+          </ul>
+          <div class="topics">
+            <span class="topic">gnss-ro</span>
+            <span class="topic">space-weather</span>
+            <span class="topic">radiation-detector</span>
+            <span class="topic">cubesat</span>
+            <span class="topic">phase-0</span>
+          </div>
+          <hr>
+          <h3>운영자</h3>
+          <p class="desc">지원, 예비 창업자.</p>
+        </aside>
+      </div>
+    </div>
+
+    <!-- ══ 탭 2: 개발 로그 (커밋 히스토리 스타일) ══ -->
+    <div class="panel" id="panel-log">
+      <div class="log-toolbar">
+        <input type="search" id="log-search" placeholder="로그 검색…" aria-label="로그 검색">
+        <select id="log-tag" aria-label="태그 필터">
+          <option value="">모든 태그</option>
+        </select>
+      </div>
+      <div id="log-list"></div>
+    </div>
+
+    <!-- ══ 탭 3: 로드맵 (마일스톤 스타일) ══ -->
+    <div class="panel" id="panel-roadmap">
+      <div class="milestones">
+        <div class="milestone">
+          <div class="ms-head"><span class="ms-phase">PHASE 0</span><h3>기초 체력</h3><span class="ms-state open">진행 중</span></div>
+          <p>도구를 다루는 손과 기록하는 습관 — Python, 전자공작, 그리고 이 아카이브.</p>
+          <div class="ms-bar"><i style="width:8%"></i></div>
+        </div>
+        <div class="milestone">
+          <div class="ms-head"><span class="ms-phase">PHASE 1 · 1.5</span><h3>위성·발사체 설계 입문</h3><span class="ms-state planned">예정</span></div>
+          <p>위성을 서브시스템의 합으로, Electron을 해부할 수 있는 눈으로.</p>
+        </div>
+        <div class="milestone">
+          <div class="ms-head"><span class="ms-phase">PHASE 2</span><h3>제품의 씨앗</h3><span class="ms-state planned">예정</span></div>
+          <p>검출기 v0.1과 GNSS 신호처리 파이프라인을 손으로. 팀과 실적 확보.</p>
+        </div>
+        <div class="milestone">
+          <div class="ms-head"><span class="ms-phase">PHASE 3</span><h3>창업 — 부품</h3><span class="ms-state planned">예정</span></div>
+          <p>방사선 검출기를 우주에 보내 헤리티지를 확보하고 첫 매출.</p>
+        </div>
+        <div class="milestone">
+          <div class="ms-head"><span class="ms-phase">PHASE 4 · 5</span><h3>자체 위성 → 데이터 사업</h3><span class="ms-state planned">예정</span></div>
+          <p>한 위성에서 대기 아래와 위를 동시 실증, 군집으로 데이터 매출 본격화.</p>
+        </div>
+        <div class="milestone">
+          <div class="ms-head"><span class="ms-phase">PHASE 6 · 7</span><h3>발사체와 그 너머</h3><span class="ms-state planned">예정</span></div>
+          <p>메탄 엔진 소형발사체, 그리고 재사용. 게이트를 통과할 때만.</p>
+        </div>
+      </div>
+      <p class="ms-note">// 이전 페이즈의 결과물이 다음 페이즈의 입장권</p>
+    </div>
+
+    <!-- ══ 탭 4: 원칙 ══ -->
+    <div class="panel" id="panel-about">
+      <ol class="principles">
+        <li><span class="num">§1</span><div><strong>안전과 합법이 우선.</strong><span>추진제·모터 자작 금지, 방사성 물질 취급 금지. 규정을 지키며 가장 멀리 간 사람이 이긴다.</span></div></li>
+        <li><span class="num">§2</span><div><strong>모든 것을 기록한다.</strong><span>시험 보고서, 설계 노트, 주간 회고 — 이 아카이브가 곧 포트폴리오이자 투자 자료다.</span></div></li>
+        <li><span class="num">§3</span><div><strong>설계는 위에서 아래로, 실행은 아래에서 위로.</strong><span>최종 목표가 오늘 공부할 부품을 결정한다.</span></div></li>
+        <li><span class="num">§4</span><div><strong>문서는 살아있게.</strong><span>모든 설계서는 버전을 올려가며 창업 시점까지 계속 업데이트한다.</span></div></li>
+        <li><span class="num">§5</span><div><strong>막히면 건너뛰고 두 바퀴 돈다.</strong><span>완벽한 한 바퀴보다 구멍 난 두 바퀴가 낫다.</span></div></li>
+      </ol>
+    </div>
+
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="sig">REFRACTA — Sounding the atmosphere, below and above.</span>
+    <span>이 사이트는 살아있는 문서입니다 — 로드맵과 함께 버전이 올라갑니다.</span>
+  </div>
+</footer>
+
+<script src="posts.js"></script>
+<script>
+/* ── 탭 전환 ── */
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.setAttribute('aria-selected','false'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    tab.setAttribute('aria-selected','true');
+    document.getElementById('panel-' + tab.dataset.panel).classList.add('active');
+  });
+});
+
+/* ── 로그 렌더링 (posts.js = 데이터베이스) ── */
+const listEl = document.getElementById('log-list');
+const searchEl = document.getElementById('log-search');
+const tagEl = document.getElementById('log-tag');
+
+function fmtId(n){ return '#' + String(n).padStart(3,'0'); }
+
+function render(){
+  const q = searchEl.value.trim().toLowerCase();
+  const tag = tagEl.value;
+  const posts = (typeof POSTS !== 'undefined' ? POSTS : [])
+    .filter(p => !tag || p.tags.includes(tag))
+    .filter(p => !q || (p.title + ' ' + p.body).toLowerCase().includes(q))
+    .sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id);
+
+  document.getElementById('post-count').textContent =
+    (typeof POSTS !== 'undefined' ? POSTS.length : 0);
+
+  if(!posts.length){
+    listEl.innerHTML = '<div class="empty">조건에 맞는 로그가 없습니다. posts.js에 새 글을 추가하세요 — 빈 화면은 글쓰기 초대장입니다.</div>';
+    return;
+  }
+
+  /* 월 단위 그룹핑 (커밋 히스토리처럼) */
+  const groups = {};
+  posts.forEach(p => {
+    const key = p.date.slice(0,7);
+    (groups[key] ||= []).push(p);
+  });
+
+  listEl.innerHTML = Object.entries(groups).map(([month, items]) => `
+    <div class="date-group">
+      <div class="date-head">
+        <svg viewBox="0 0 16 16"><path d="M11.93 8.5a4.002 4.002 0 0 1-7.86 0H.75a.75.75 0 0 1 0-1.5h3.32a4.002 4.002 0 0 1 7.86 0h3.32a.75.75 0 0 1 0 1.5Zm-1.43-.75a2.5 2.5 0 1 0-5 0 2.5 2.5 0 0 0 5 0Z"/></svg>
+        ${month.replace('-', '년 ')}월
+      </div>
+      <div class="commit-list">
+        ${items.map(p => `
+          <div class="commit" id="post-${p.id}">
+            <button class="commit-title" aria-expanded="false">${esc(p.title)}</button>
+            <div class="commit-meta">
+              <span class="commit-id">log ${fmtId(p.id)}</span>
+              <span>${p.date}</span>
+              ${p.tags.map(t => `<button class="label" data-tag="${esc(t)}">${esc(t)}</button>`).join('')}
+            </div>
+            <div class="commit-body">${esc(p.body)}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `).join('');
+
+  /* 제목 클릭 → 본문 펼치기 */
+  listEl.querySelectorAll('.commit-title').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const c = btn.closest('.commit');
+      c.classList.toggle('open');
+      btn.setAttribute('aria-expanded', c.classList.contains('open'));
+    });
+  });
+  /* 라벨 클릭 → 태그 필터 */
+  listEl.querySelectorAll('.label').forEach(btn => {
+    btn.addEventListener('click', () => { tagEl.value = btn.dataset.tag; render(); });
+  });
+}
+
+function esc(s){
+  return String(s).replace(/[&<>"']/g, c =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+/* 태그 목록 자동 수집 */
+if(typeof POSTS !== 'undefined'){
+  [...new Set(POSTS.flatMap(p => p.tags))].sort().forEach(t => {
+    const o = document.createElement('option');
+    o.value = o.textContent = t;
+    tagEl.appendChild(o);
+  });
+}
+searchEl.addEventListener('input', render);
+tagEl.addEventListener('change', render);
+render();
+</script>
+
+</body>
+</html>
