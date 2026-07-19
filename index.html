@@ -6,10 +6,12 @@
   리프랙타 개발 로그 v0.2 — GitHub 스타일 / 저장소 = 데이터베이스
   ═══════════════════════════════════════════════════════════
 
-  파일 구성 (셋 다 저장소 루트에):
-    index.html   ← 이 파일 (화면)
-    posts.js     ← 데이터베이스 1 (파일 방식)
-    vercel.json  ← Vercel 배포 설정 (수정할 일 없음)
+  파일 구성 (전부 저장소 루트에):
+    index.html    ← 이 파일 (화면)
+    posts.js      ← 데이터베이스 1 (파일 방식)
+    vercel.json   ← Vercel 배포 설정 (수정할 일 없음)
+    favicon.svg   ← 브라우저 탭 아이콘
+    favicon-180.png ← 홈 화면 추가용 아이콘
 
   ▸ 배포 (Vercel — 계정은 부모님 명의, 약관상 16세 이상):
     1. 본인 GitHub 계정에 저장소 생성 (예: refracta-log)
@@ -39,6 +41,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>refracta-log · 대기 아래와 위를 함께 잽니다</title>
 <meta name="description" content="GNSS 전파의 굴절에서 날씨를, 우주방사선에서 우주기상을 읽는 데이터 회사를 향한 개발 기록.">
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="favicon-180.png">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
 <style>
@@ -260,10 +264,10 @@
 <!-- ── 헤더: 저장소 경로 ── -->
 <div class="gh-header">
   <div class="wrap">
-    <svg class="logo" viewBox="0 0 24 24" aria-hidden="true">
-      <circle cx="12" cy="12" r="10.5" fill="none" stroke="#8b949e" stroke-width="1.5"/>
-      <path d="M4 15 Q 12 9 20 15" fill="none" stroke="#d29922" stroke-width="1.5"/>
-      <rect x="9.6" y="4.6" width="4.8" height="4.8" fill="none" stroke="#58a6ff" stroke-width="1.5" transform="rotate(45 12 7)"/>
+    <svg class="logo" viewBox="0 0 120 120" aria-hidden="true">
+      <circle cx="60" cy="64" r="36" fill="none" stroke="#8b949e" stroke-width="10"/>
+      <path d="M 2 38 C 40 48, 42 76, 60 78 C 80 80, 94 64, 118 52" fill="none" stroke="#d29922" stroke-width="12" stroke-linecap="round"/>
+      <rect x="-8" y="-8" width="16" height="16" fill="#010409" stroke="#58a6ff" stroke-width="9" transform="translate(6 40) rotate(45)" stroke-linejoin="round"/>
     </svg>
     <span class="repo-path"><a href="#">jiwon</a><span class="sep">/</span><strong>refracta-log</strong><span class="badge-public">Public</span></span>
   </div>
